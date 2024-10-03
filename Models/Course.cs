@@ -2,10 +2,11 @@
 {
 	public class Course
 	{
-		public int CourseId { get; set; }
+		public string CourseId { get; set; }
 		public string CourseName { get; set; }
 		public string CourseContent { get; set; }
-		public string CourseFeedback { get; set; }
+		public int CourseDuration { get; set; }
+		//public string CourseFeedback { get; set; }
 		public int CoursePrice { get; set; }
 	}
 }

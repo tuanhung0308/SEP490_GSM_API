@@ -3,21 +3,23 @@ using Firebase.Database;
 using Alpha_API.Models;
 using Firebase.Database.Query;
 using Microsoft.AspNetCore.Authorization;
+using FirebaseAdmin.Auth;
 
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Policy = "AdminOnly")]
 public class UsersController : ControllerBase
 {
 	private readonly FirebaseClient _firebaseClient;
 
 	public UsersController()
 	{
-		_firebaseClient = new FirebaseClient("https://gym-management-e03f8-default-rtdb.asia-southeast1.firebasedatabase.app/");
+		_firebaseClient = new FirebaseClient("https://sgm-management-c98cd-default-rtdb.firebaseio.com/");
 	}
 
 	// GET: api/users
-	[Authorize(Policy = "AdminOnly")]
+
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<User>>> GetUsers()
 	{
@@ -28,6 +30,7 @@ public class UsersController : ControllerBase
 		var userList = new List<User>();
 		foreach (var user in users)
 		{
+			user.Object.UserId = user.Key;
 			userList.Add(user.Object);
 		}
 
@@ -47,20 +50,20 @@ public class UsersController : ControllerBase
 			.Child("Users")
 		.PostAsync(new
 		{
-			user.UserAvatar,
-			user.UserImage,
-			user.UserFirstLogin,
-			user.UserIsEnabled,
-			user.UserPhone, 
-			user.UserName,
-			user.UserPassHashed,
-			user.UserEmail,
-			user.RoleId,
+			//user.UserId,
+			user.Name,
+			user.Email,
+			user.Password,
+			user.Gender, 
+			user.Dob,
 			user.Address,
+			user.Phone,
+			user.RoleId,
+			user.UserAvatar,
 		});
 
-		user.UserId = result.Key; // Firebase generates a unique key
-		return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
+		//user.UserId = result.Key; // Firebase generates a unique key
+		return CreatedAtAction(nameof(GetUserById), new { id = result.Key }, user);
 	}
 
 	// GET: api/users/{id}
@@ -71,6 +74,8 @@ public class UsersController : ControllerBase
 			.Child("Users")
 			.Child(id)
 			.OnceSingleAsync<User>();
+
+		user.UserId = id;
 
 		if (user == null)
 		{
@@ -111,15 +116,11 @@ public class UsersController : ControllerBase
 			return NotFound();
 		}
 
-		// Update fields selectively
-		if (!string.IsNullOrEmpty(user.UserName))
-		{
-			existingUser.UserName = user.UserName;
-		}
-		if (!string.IsNullOrEmpty(user.UserEmail))
-		{
-			existingUser.UserEmail = user.UserEmail;
-		}
+		//// Update fields selectively
+		//if (!string.IsNullOrEmpty(user.UserEmail))
+		//{
+		//	existingUser.UserEmail = user.UserEmail;
+		//}
 
 		await _firebaseClient
 			.Child("Users")

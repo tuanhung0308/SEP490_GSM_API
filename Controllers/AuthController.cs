@@ -91,7 +91,9 @@ public class AuthController : ControllerBase
 	{
 		var claims = new[]
 		{
-			new Claim(JwtRegisteredClaimNames.Sub, email),
+			//new Claim(JwtRegisteredClaimNames.Sub, email),
+
+			 new Claim(ClaimTypes.Email, email),  // Use ClaimTypes.Email for email claim
 			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new Claim(ClaimTypes.Role, role)  // Include the user's role in the token
         };

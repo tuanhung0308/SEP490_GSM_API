@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <img id="qrCodeImage" src="" alt="QR Code" />
+
+    <script>
+        fetch('/api/qr/generate', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        accountNo: "0978788128",
+        accountName: "DINH DAI DUONG",
+        acqId: "970422",
+        addInfo: "DK030303",
+        amount: "500000",
+        template: "compact"
+    })
+})
+.then(response => response.json())
+.then(data => {
+    document.getElementById('qrCodeImage').src = data.qrCode;
+})
+.catch(error => console.error('Error:', error));
+
+    </script>
+</body>
+</html>

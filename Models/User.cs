@@ -11,7 +11,7 @@ namespace Alpha_API.Models
 		public string      Email     { get; set; }	       
 		public string      Password  { get; set; }    
 		public string      Gender     { get; set; }
-		public DateTime   Dob { get; set; }  // Use custom class for dob
+		public DateTime   Dob { get; set; }  
 		public string     Address      { get; set; }
 		public string     Phone        { get; set; }
 		public string     RoleId             { get; set; }

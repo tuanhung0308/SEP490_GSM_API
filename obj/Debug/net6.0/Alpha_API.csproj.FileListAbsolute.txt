@@ -100,3 +100,4 @@ D:\Downloads\Fall24\SEP490\Alpha_API\bin\Debug\net6.0\System.Collections.Immutab
 D:\Downloads\Fall24\SEP490\Alpha_API\bin\Debug\net6.0\System.Management.dll
 D:\Downloads\Fall24\SEP490\Alpha_API\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Management.dll
 D:\Downloads\Fall24\SEP490\Alpha_API\obj\Debug\net6.0\Alpha_API.sourcelink.json
+D:\Downloads\Fall24\SEP490\Alpha_API\bin\Debug\net6.0\nuget.config

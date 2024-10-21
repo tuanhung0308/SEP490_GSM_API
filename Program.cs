@@ -13,45 +13,12 @@ namespace WebAPI
 {
 	public class Program
 	{
-		private static IEdmModel GetEdmModel()
-		{
-			ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-			//builder.EntitySet<User>("User").EntityType.HasKey(m => m.UserId).Expand(5);
-			//builder.EntitySet<Crop>("Crop").EntityType.HasKey(s => s.CropId).Expand(5);
-			return builder.GetEdmModel();
-		}
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
 			builder.Services.AddControllers();
 			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen(options =>
-			{
-				options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-				{
-					Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
-					In = ParameterLocation.Header,
-					Name = "Authorization",
-					Type = SecuritySchemeType.ApiKey,
-					Scheme = "Bearer"
-				});
-
-				options.AddSecurityRequirement(new OpenApiSecurityRequirement
-				{
-					{
-						new OpenApiSecurityScheme
-						{
-							Reference = new OpenApiReference
-							{
-								Type = ReferenceType.SecurityScheme,
-								Id = "Bearer"
-							}
-						},
-						Array.Empty<string>()
-					}
-				});
-			});
 
 			var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
@@ -60,11 +27,6 @@ namespace WebAPI
 			{
 				opts.AddPolicy("CORSPolicy", builder => builder.AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetIsOriginAllowed((host) => true));
 			});
-
-
-			builder.Services.AddControllers().AddOData(option => option.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100)
-			.AddRouteComponents("odata", GetEdmModel())).AddJsonOptions(x =>
-				x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 
 			builder.Services.AddAuthentication(options =>
@@ -86,44 +48,40 @@ namespace WebAPI
 				};
 			});
 
-			builder.Services.AddAuthorization(options =>
-			{
-				options.AddPolicy("AdminOnly", policy => policy.RequireClaim(ClaimTypes.Role, "admin"));
-				options.AddPolicy("StaffOnly", policy => policy.RequireClaim(ClaimTypes.Role, "staff"));
-				options.AddPolicy("CustomerOnly", policy => policy.RequireClaim(ClaimTypes.Role, "customer"));
-			});
 
 
-
-
-
-			//if (FirebaseApp.DefaultInstance == null)
+			//builder.Services.AddAuthorization(options =>
 			//{
-			//	FirebaseApp.Create(new AppOptions()
-			//	{
-			//		Credential = GoogleCredential.FromFile(config["Firebase:AdminSDKPath"])
-			//	});
-			//}
+			//	options.AddPolicy("AdminOnly", policy => policy.RequireClaim(ClaimTypes.Role, "admin"));
+			//	options.AddPolicy("StaffOnly", policy => policy.RequireClaim(ClaimTypes.Role, "staff"));
+			//	options.AddPolicy("PTOnly", policy => policy.RequireClaim(ClaimTypes.Role, "pt"));
+			//	options.AddPolicy("CustomerOnly", policy => policy.RequireClaim(ClaimTypes.Role, "customer"));
+			//});
+
+			FirebaseApp.Create(new AppOptions()
+			{
+				Credential = GoogleCredential.FromFile("D:\\Downloads\\Fall24\\SEP490\\Secret\\sgm-management-c98cd-firebase-adminsdk-kc3zt-383493a9bd.json")
+			});
+			builder.WebHost.UseUrls("http://0.0.0.0:5000");
 			builder.Services.AddHttpClient<AuthController>();
 
-			builder.Services.AddSwaggerGen(c =>
+			// Add session services
+			builder.Services.AddDistributedMemoryCache(); // You can also use other types of caches
+			builder.Services.AddSession(options =>
 			{
-				c.SwaggerDoc("v1", new OpenApiInfo { Title = "GymAPI_OData", Version = "v1" });
+				options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout
+				options.Cookie.HttpOnly = true; // Make the session cookie accessible only to the server
+				options.Cookie.IsEssential = true; // Ensure session cookie is always available
 			});
 
 			var app = builder.Build();
 
-
-			if (app.Environment.IsDevelopment())
-			{
-				app.UseSwagger();
-				app.UseSwaggerUI();
-			}
 			app.UseHttpsRedirection();
 			app.UseRouting();	
 			app.UseCors("CORSPolicy");
 			app.UseAuthentication();
 			app.UseAuthorization();
+			app.UseSession();
 			app.MapControllers();
 			app.UseODataBatching();
 

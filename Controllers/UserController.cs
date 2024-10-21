@@ -8,14 +8,16 @@ using FirebaseAdmin.Auth;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AdminOnly")]
+//[Authorize(Policy = "AdminOnly")]
+[Authorize(Roles = "admin")]
 public class UsersController : ControllerBase
 {
-	private readonly FirebaseClient _firebaseClient;
+	private FirebaseClient _firebaseClient;
+	private const string FirebaseBaseUrl = "https://sgm-management-c98cd-default-rtdb.firebaseio.com/";
 
 	public UsersController()
 	{
-		_firebaseClient = new FirebaseClient("https://sgm-management-c98cd-default-rtdb.firebaseio.com/");
+		_firebaseClient = new FirebaseClient(FirebaseBaseUrl);
 	}
 
 	// GET: api/users
@@ -23,6 +25,18 @@ public class UsersController : ControllerBase
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<User>>> GetUsers()
 	{
+		var idToken = HttpContext.Session.GetString("FirebaseIdToken");
+
+		if (!string.IsNullOrEmpty(idToken))
+		{
+			// Use the token in your database query
+			_firebaseClient = new FirebaseClient(FirebaseBaseUrl,
+				new FirebaseOptions
+				{
+					AuthTokenAsyncFactory = () => Task.FromResult(idToken)
+				});
+		}
+
 		var users = await _firebaseClient
 			.Child("Users")
 			.OnceAsync<User>();
@@ -54,7 +68,7 @@ public class UsersController : ControllerBase
 			user.Name,
 			user.Email,
 			user.Password,
-			user.Gender, 
+			user.Gender,
 			user.Dob,
 			user.Address,
 			user.Phone,
